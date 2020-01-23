@@ -10,21 +10,36 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ByteBuffer=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var ByteBuffer = (function () {
+  _createClass(ByteBuffer, null, [{
+    key: 'LITTLE_ENDIAN',
 
-  // Creates a new ByteBuffer
-  // - from given source (assumed to be number of bytes when numeric)
-  // - with given byte order (defaults to big-endian)
-  // - with given implicit growth strategy (defaults to false)
+    // Byte order constants
+    value: true,
+    enumerable: true
+  }, {
+    key: 'BIG_ENDIAN',
+    value: false,
+
+    // Creates a new ByteBuffer
+    // - from given source (assumed to be number of bytes when numeric)
+    // - with given byte order (defaults to big-endian)
+    // - with given implicit growth strategy (defaults to false)
+    enumerable: true
+  }]);
 
   function ByteBuffer() {
-    var source = arguments[0] === undefined ? 0 : arguments[0];
-    var order = arguments[1] === undefined ? this.constructor.BIG_ENDIAN : arguments[1];
-    var implicitGrowth = arguments[2] === undefined ? false : arguments[2];
+    var source = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+    var order = arguments.length <= 1 || arguments[1] === undefined ? this.constructor.BIG_ENDIAN : arguments[1];
+    var implicitGrowth = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
     _classCallCheck(this, ByteBuffer);
 
@@ -58,10 +73,12 @@ var ByteBuffer = (function () {
     this.buffer = buffer;
   }
 
+  // Generic reader
+
+  // Sanitizes read/write index
+
   _createClass(ByteBuffer, [{
     key: '_sanitizeIndex',
-
-    // Sanitizes read/write index
     value: function _sanitizeIndex() {
       if (this._index < 0) {
         this._index = 0;
@@ -70,12 +87,12 @@ var ByteBuffer = (function () {
         this._index = this.length;
       }
     }
-  }, {
-    key: '_extractBuffer',
 
     // Extracts buffer from given source and optionally clones it
+  }, {
+    key: '_extractBuffer',
     value: function _extractBuffer(source) {
-      var clone = arguments[1] === undefined ? false : arguments[1];
+      var clone = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
       // Whether source is a byte-aware object
       if (source && typeof source.byteLength !== 'undefined') {
@@ -83,30 +100,31 @@ var ByteBuffer = (function () {
         // Determine whether source is a view or a raw buffer
         if (typeof source.buffer !== 'undefined') {
           return clone ? source.buffer.slice(0) : source.buffer;
-        } else {
-          return clone ? source.slice(0) : source;
         }
+        return clone ? source.slice(0) : source;
 
         // Whether source is a sequence of bytes
       } else if (source && typeof source.length !== 'undefined') {
 
-        // Although Uint8Array's constructor succeeds when given strings,
-        // it does not correctly instantiate the buffer
-        if (source.constructor == String) {
-          return null;
-        }
+          // Although Uint8Array's constructor succeeds when given strings,
+          // it does not correctly instantiate the buffer
+          if (source.constructor === String) {
+            return null;
+          }
 
-        try {
-          return new Uint8Array(source).buffer;
-        } catch (error) {
-          return null;
-        }
+          try {
+            return new Uint8Array(source).buffer;
+          } catch (error) {
+            return null;
+          }
 
-        // No buffer found
-      } else {
-        return null;
-      }
+          // No buffer found
+        } else {
+            return null;
+          }
     }
+
+    // Retrieves buffer
   }, {
     key: 'front',
 
@@ -115,31 +133,33 @@ var ByteBuffer = (function () {
       this._index = 0;
       return this;
     }
-  }, {
-    key: 'end',
 
     // Sets index to end of the buffer
+  }, {
+    key: 'end',
     value: function end() {
       this._index = this.length;
       return this;
     }
-  }, {
-    key: 'seek',
 
     // Seeks given number of bytes
     // Note: Backwards seeking is supported
+  }, {
+    key: 'seek',
     value: function seek() {
-      var bytes = arguments[0] === undefined ? 1 : arguments[0];
+      var bytes = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
 
       this.index += bytes;
       return this;
     }
+
+    // Retrieves number of available bytes
   }, {
     key: 'read',
 
     // Reads sequence of given number of bytes (defaults to number of bytes available)
     value: function read() {
-      var bytes = arguments[0] === undefined ? this.available : arguments[0];
+      var bytes = arguments.length <= 0 || arguments[0] === undefined ? this.available : arguments[0];
 
       if (bytes > this.available) {
         throw new Error('Cannot read ' + bytes + ' byte(s), ' + this.available + ' available');
@@ -153,12 +173,12 @@ var ByteBuffer = (function () {
       this._index += bytes;
       return value;
     }
-  }, {
-    key: 'write',
 
     // Writes sequence of bytes
+  }, {
+    key: 'write',
     value: function write(sequence) {
-      var view;
+      var view = undefined;
 
       // Ensure we're dealing with a Uint8Array view
       if (!(sequence instanceof Uint8Array)) {
@@ -188,14 +208,14 @@ var ByteBuffer = (function () {
       this._index += view.byteLength;
       return this;
     }
-  }, {
-    key: 'readString',
 
     // Reads UTF-8 encoded string of given number of bytes (defaults to number of bytes available)
     //
     // Based on David Flanagan's BufferView (https://github.com/davidflanagan/BufferView/blob/master/BufferView.js//L195)
+  }, {
+    key: 'readString',
     value: function readString() {
-      var bytes = arguments[0] === undefined ? this.available : arguments[0];
+      var bytes = arguments.length <= 0 || arguments[0] === undefined ? this.available : arguments[0];
 
       if (bytes > this.available) {
         throw new Error('Cannot read ' + bytes + ' byte(s), ' + this.available + ' available');
@@ -215,10 +235,10 @@ var ByteBuffer = (function () {
       var c = 0;
 
       // Bytes
-      var b1,
-          b2,
-          b3,
-          b4 = null;
+      var b1 = null;
+      var b2 = null;
+      var b3 = null;
+      var b4 = null;
 
       // Target index
       var target = this._index + bytes;
@@ -240,7 +260,7 @@ var ByteBuffer = (function () {
             throw new Error('Bad continuation byte');
           }
 
-          codepoints[c++] = ((b1 & 31) << 6) + (b2 & 63);
+          codepoints[c++] = ((b1 & 0x1F) << 6) + (b2 & 0x3F);
 
           this._index += 2;
         } else if (b1 < 240) {
@@ -258,7 +278,7 @@ var ByteBuffer = (function () {
             throw new Error('Bad continuation byte');
           }
 
-          codepoints[c++] = ((b1 & 15) << 12) + ((b2 & 63) << 6) + (b3 & 63);
+          codepoints[c++] = ((b1 & 0x0F) << 12) + ((b2 & 0x3F) << 6) + (b3 & 0x3F);
 
           this._index += 3;
         } else if (b1 < 245) {
@@ -281,12 +301,12 @@ var ByteBuffer = (function () {
             throw new Error('Bad continuation byte');
           }
 
-          var cp = ((b1 & 7) << 18) + ((b2 & 63) << 12) + ((b3 & 63) << 6) + (b4 & 63);
-          cp -= 65536;
+          var cp = ((b1 & 0x07) << 18) + ((b2 & 0x3F) << 12) + ((b3 & 0x3F) << 6) + (b4 & 0x3F);
+          cp -= 0x10000;
 
           // Turn code point into two surrogate pairs
-          codepoints[c++] = 55296 + ((cp & 1047552) >>> 10);
-          codepoints[c++] = 56320 + (cp & 1023);
+          codepoints[c++] = 0xD800 + ((cp & 0x0FFC00) >>> 10);
+          codepoints[c++] = 0xDC00 + (cp & 0x0003FF);
 
           this._index += 4;
         } else {
@@ -300,23 +320,22 @@ var ByteBuffer = (function () {
       var length = codepoints.length;
       if (length < limit) {
         return String.fromCharCode.apply(String, codepoints);
-      } else {
-        var chars = [];
-        var i = 0;
-        while (i < length) {
-          chars.push(String.fromCharCode.apply(String, codepoints.slice(i, i + limit)));
-          i += limit;
-        }
-        return chars.join('');
       }
+      var chars = [];
+      var i = 0;
+      while (i < length) {
+        chars.push(String.fromCharCode.apply(String, codepoints.slice(i, i + limit)));
+        i += limit;
+      }
+      return chars.join('');
     }
-  }, {
-    key: 'writeString',
 
     // Writes UTF-8 encoded string
     // Note: Does not write string length or terminator
     //
     // Based on David Flanagan's BufferView (https://github.com/davidflanagan/BufferView/blob/master/BufferView.js//L264)
+  }, {
+    key: 'writeString',
     value: function writeString(string) {
 
       // Encoded UTF-8 bytes
@@ -330,37 +349,37 @@ var ByteBuffer = (function () {
       while (i < length) {
         var c = string.charCodeAt(i);
 
-        if (c <= 127) {
+        if (c <= 0x7F) {
           // One byte sequence
           bytes[b++] = c;
-        } else if (c <= 2047) {
+        } else if (c <= 0x7FF) {
           // Two byte sequence
-          bytes[b++] = 192 | (c & 1984) >>> 6;
-          bytes[b++] = 128 | c & 63;
-        } else if (c <= 55295 || c >= 57344 && c <= 65535) {
+          bytes[b++] = 0xC0 | (c & 0x7C0) >>> 6;
+          bytes[b++] = 0x80 | c & 0x3F;
+        } else if (c <= 0xD7FF || c >= 0xE000 && c <= 0xFFFF) {
           // Three byte sequence
           // Source character is not a UTF-16 surrogate
-          bytes[b++] = 224 | (c & 61440) >>> 12;
-          bytes[b++] = 128 | (c & 4032) >>> 6;
-          bytes[b++] = 128 | c & 63;
+          bytes[b++] = 0xE0 | (c & 0xF000) >>> 12;
+          bytes[b++] = 0x80 | (c & 0x0FC0) >>> 6;
+          bytes[b++] = 0x80 | c & 0x3F;
         } else {
           // Four byte sequence
-          if (i == length - 1) {
+          if (i === length - 1) {
             throw new Error('Unpaired surrogate ' + string[i] + ' (index ' + i + ')');
           }
 
           // Retrieve surrogate
           var d = string.charCodeAt(++i);
-          if (c < 55296 || c > 56319 || d < 56320 || d > 57343) {
+          if (c < 0xD800 || c > 0xDBFF || d < 0xDC00 || d > 0xDFFF) {
             throw new Error('Unpaired surrogate ' + string[i] + ' (index ' + i + ')');
           }
 
-          var cp = ((c & 1023) << 10) + (d & 1023) + 65536;
+          var cp = ((c & 0x03FF) << 10) + (d & 0x03FF) + 0x10000;
 
-          bytes[b++] = 240 | (cp & 1835008) >>> 18;
-          bytes[b++] = 128 | (cp & 258048) >>> 12;
-          bytes[b++] = 128 | (cp & 4032) >>> 6;
-          bytes[b++] = 128 | cp & 63;
+          bytes[b++] = 0xF0 | (cp & 0x1C0000) >>> 18;
+          bytes[b++] = 0x80 | (cp & 0x03F000) >>> 12;
+          bytes[b++] = 0x80 | (cp & 0x000FC0) >>> 6;
+          bytes[b++] = 0x80 | cp & 0x3F;
         }
 
         ++i;
@@ -370,19 +389,19 @@ var ByteBuffer = (function () {
 
       return bytes.length;
     }
-  }, {
-    key: 'readCString',
 
     // Aliases for reading/writing UTF-8 encoded strings
     // readUTFChars: this.::readString
     // writeUTFChars: this.::writeString
 
     // Reads UTF-8 encoded C-string (excluding the actual NULL-byte)
+  }, {
+    key: 'readCString',
     value: function readCString() {
       var bytes = this._raw;
       var length = bytes.length;
       var i = this._index;
-      while (bytes[i] != 0 && i < length) {
+      while (bytes[i] !== 0x00 && i < length) {
         ++i;
       }
 
@@ -395,19 +414,19 @@ var ByteBuffer = (function () {
 
       return null;
     }
-  }, {
-    key: 'writeCString',
 
     // Writes UTF-8 encoded C-string (NULL-terminated)
+  }, {
+    key: 'writeCString',
     value: function writeCString(string) {
       var bytes = this.writeString(string);
-      this.writeByte(0);
+      this.writeByte(0x00);
       return ++bytes;
     }
-  }, {
-    key: 'prepend',
 
     // Prepends given number of bytes
+  }, {
+    key: 'prepend',
     value: function prepend(bytes) {
       if (bytes <= 0) {
         throw new RangeError('Invalid number of bytes ' + bytes);
@@ -419,10 +438,10 @@ var ByteBuffer = (function () {
       this.buffer = view.buffer;
       return this;
     }
-  }, {
-    key: 'append',
 
     // Appends given number of bytes
+  }, {
+    key: 'append',
     value: function append(bytes) {
       if (bytes <= 0) {
         throw new RangeError('Invalid number of bytes ' + bytes);
@@ -433,13 +452,13 @@ var ByteBuffer = (function () {
       this.buffer = view.buffer;
       return this;
     }
-  }, {
-    key: 'clip',
 
     // Clips this buffer
+  }, {
+    key: 'clip',
     value: function clip() {
-      var begin = arguments[0] === undefined ? this._index : arguments[0];
-      var end = arguments[1] === undefined ? this.length : arguments[1];
+      var begin = arguments.length <= 0 || arguments[0] === undefined ? this._index : arguments[0];
+      var end = arguments.length <= 1 || arguments[1] === undefined ? this.length : arguments[1];
 
       if (begin < 0) {
         begin = this.length + begin;
@@ -449,153 +468,151 @@ var ByteBuffer = (function () {
       this.buffer = buffer;
       return this;
     }
-  }, {
-    key: 'slice',
 
     // Slices this buffer
+  }, {
+    key: 'slice',
     value: function slice() {
-      var begin = arguments[0] === undefined ? 0 : arguments[0];
-      var end = arguments[1] === undefined ? this.length : arguments[1];
+      var begin = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+      var end = arguments.length <= 1 || arguments[1] === undefined ? this.length : arguments[1];
 
       var slice = new ByteBuffer(this._buffer.slice(begin, end), this.order);
       return slice;
     }
-  }, {
-    key: 'clone',
 
     // Clones this buffer
+  }, {
+    key: 'clone',
     value: function clone() {
       var clone = new ByteBuffer(this._buffer.slice(0), this.order, this.implicitGrowth);
       clone.index = this._index;
       return clone;
     }
-  }, {
-    key: 'reverse',
 
     // Reverses this buffer
+  }, {
+    key: 'reverse',
     value: function reverse() {
       Array.prototype.reverse.call(this._raw);
       this._index = 0;
       return this;
     }
-  }, {
-    key: 'toArray',
 
     // Array of bytes in this buffer
+  }, {
+    key: 'toArray',
     value: function toArray() {
       return Array.prototype.slice.call(this._raw, 0);
     }
-  }, {
-    key: 'toString',
 
     // Short string representation of this buffer
+  }, {
+    key: 'toString',
     value: function toString() {
-      var order = this._order == this.constructor.BIG_ENDIAN ? 'big-endian' : 'little-endian';
+      var order = this._order === this.constructor.BIG_ENDIAN ? 'big-endian' : 'little-endian';
       return '[ByteBuffer; Order: ' + order + '; Length: ' + this.length + '; Index: ' + this._index + '; Available: ' + this.available + ']';
     }
-  }, {
-    key: 'toHex',
 
     // Hex representation of this buffer with given spacer
+  }, {
+    key: 'toHex',
     value: function toHex() {
-      var spacer = arguments[0] === undefined ? ' ' : arguments[0];
+      var spacer = arguments.length <= 0 || arguments[0] === undefined ? ' ' : arguments[0];
 
       return Array.prototype.map.call(this._raw, function (byte) {
         return ('00' + byte.toString(16).toUpperCase()).slice(-2);
       }).join(spacer);
     }
-  }, {
-    key: 'toASCII',
 
     // ASCII representation of this buffer with given spacer and optional byte alignment
+  }, {
+    key: 'toASCII',
     value: function toASCII() {
-      var spacer = arguments[0] === undefined ? ' ' : arguments[0];
-      var align = arguments[1] === undefined ? true : arguments[1];
-      var unknown = arguments[2] === undefined ? '�' : arguments[2];
+      var spacer = arguments.length <= 0 || arguments[0] === undefined ? ' ' : arguments[0];
+      var align = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+      var unknown = arguments.length <= 2 || arguments[2] === undefined ? '�' : arguments[2];
 
       var prefix = align ? ' ' : '';
       return Array.prototype.map.call(this._raw, function (byte) {
-        return byte < 32 || byte > 126 ? prefix + unknown : prefix + String.fromCharCode(byte);
+        return byte < 0x20 || byte > 0x7E ? prefix + unknown : prefix + String.fromCharCode(byte);
       }).join(spacer);
     }
   }, {
     key: 'buffer',
-
-    // Retrieves buffer
-    get: function () {
+    get: function get() {
       return this._buffer;
     },
 
     // Sets new buffer and sanitizes read/write index
-    set: function (buffer) {
+    set: function set(buffer) {
       this._buffer = buffer;
       this._raw = new Uint8Array(this._buffer);
       this._view = new DataView(this._buffer);
       this._sanitizeIndex();
     }
-  }, {
-    key: 'raw',
 
     // Retrieves raw buffer
-    get: function () {
+  }, {
+    key: 'raw',
+    get: function get() {
       return this._raw;
     }
-  }, {
-    key: 'view',
 
     // Retrieves view
-    get: function () {
+  }, {
+    key: 'view',
+    get: function get() {
       return this._view;
     }
-  }, {
-    key: 'length',
 
     // Retrieves number of bytes
-    get: function () {
+  }, {
+    key: 'length',
+    get: function get() {
       return this._buffer.byteLength;
     }
-  }, {
-    key: 'byteLength',
 
     // Retrieves number of bytes
     // Note: This allows for ByteBuffer to be detected as a proper source by its own constructor
-    get: function () {
+  }, {
+    key: 'byteLength',
+    get: function get() {
       return this.length;
     }
-  }, {
-    key: 'order',
 
     // Retrieves byte order
-    get: function () {
+  }, {
+    key: 'order',
+    get: function get() {
       return this._order;
     },
 
     // Sets byte order
-    set: function (order) {
+    set: function set(order) {
       this._order = !!order;
     }
-  }, {
-    key: 'implicitGrowth',
 
     // Retrieves implicit growth strategy
-    get: function () {
+  }, {
+    key: 'implicitGrowth',
+    get: function get() {
       return this._implicitGrowth;
     },
 
     // Sets implicit growth strategy
-    set: function (implicitGrowth) {
+    set: function set(implicitGrowth) {
       this._implicitGrowth = !!implicitGrowth;
     }
-  }, {
-    key: 'index',
 
     // Retrieves read/write index
-    get: function () {
+  }, {
+    key: 'index',
+    get: function get() {
       return this._index;
     },
 
     // Sets read/write index
-    set: function (index) {
+    set: function set(index) {
       if (index < 0 || index > this.length) {
         throw new RangeError('Invalid index ' + index + ', should be between 0 and ' + this.length);
       }
@@ -604,30 +621,17 @@ var ByteBuffer = (function () {
     }
   }, {
     key: 'available',
-
-    // Retrieves number of available bytes
-    get: function () {
+    get: function get() {
       return this.length - this._index;
     }
-  }], [{
-    key: 'LITTLE_ENDIAN',
-
-    // Byte order constants
-    value: true,
-    enumerable: true
-  }, {
-    key: 'BIG_ENDIAN',
-    value: false,
-    enumerable: true
   }]);
 
   return ByteBuffer;
 })();
 
-// Generic reader
 var reader = function reader(method, bytes) {
   return function () {
-    var order = arguments[0] === undefined ? this._order : arguments[0];
+    var order = arguments.length <= 0 || arguments[0] === undefined ? this._order : arguments[0];
 
     if (bytes > this.available) {
       throw new Error('Cannot read ' + bytes + ' byte(s), ' + this.available + ' available');
@@ -642,7 +646,7 @@ var reader = function reader(method, bytes) {
 // Generic writer
 var writer = function writer(method, bytes) {
   return function (value) {
-    var order = arguments[1] === undefined ? this._order : arguments[1];
+    var order = arguments.length <= 1 || arguments[1] === undefined ? this._order : arguments[1];
 
     var available = this.available;
     if (bytes > available) {
@@ -668,6 +672,8 @@ ByteBuffer.prototype.readInt = reader('getInt32', 4);
 ByteBuffer.prototype.readUnsignedInt = reader('getUint32', 4);
 ByteBuffer.prototype.readFloat = reader('getFloat32', 4);
 ByteBuffer.prototype.readDouble = reader('getFloat64', 8);
+ByteBuffer.prototype.readBigInt64 = reader('getBigInt64', 8);
+ByteBuffer.prototype.readBigUint64 = reader('getBigUint64', 8);
 
 // Writers for bytes, shorts, integers, floats and doubles
 ByteBuffer.prototype.writeByte = writer('setInt8', 1);
@@ -678,8 +684,11 @@ ByteBuffer.prototype.writeInt = writer('setInt32', 4);
 ByteBuffer.prototype.writeUnsignedInt = writer('setUint32', 4);
 ByteBuffer.prototype.writeFloat = writer('setFloat32', 4);
 ByteBuffer.prototype.writeDouble = writer('setFloat64', 8);
+ByteBuffer.prototype.writeBigInt64 = writer('setBigInt64', 8);
+ByteBuffer.prototype.writeBigUint64 = writer('setBigUint64', 8);
 
-module.exports = ByteBuffer;
+exports['default'] = ByteBuffer;
+module.exports = exports['default'];
 },{}]},{},[1])
 (1)
 });
