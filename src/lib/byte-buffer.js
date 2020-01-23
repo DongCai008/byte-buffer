@@ -562,6 +562,8 @@ ByteBuffer.prototype.readInt = reader('getInt32', 4);
 ByteBuffer.prototype.readUnsignedInt = reader('getUint32', 4);
 ByteBuffer.prototype.readFloat = reader('getFloat32', 4);
 ByteBuffer.prototype.readDouble = reader('getFloat64', 8);
+ByteBuffer.prototype.readBigInt64 = reader('getBigInt64', 8);
+ByteBuffer.prototype.readBigUint64 = reader('getBigUint64', 8);
 
 // Writers for bytes, shorts, integers, floats and doubles
 ByteBuffer.prototype.writeByte = writer('setInt8', 1);
@@ -572,5 +574,7 @@ ByteBuffer.prototype.writeInt = writer('setInt32', 4);
 ByteBuffer.prototype.writeUnsignedInt = writer('setUint32', 4);
 ByteBuffer.prototype.writeFloat = writer('setFloat32', 4);
 ByteBuffer.prototype.writeDouble = writer('setFloat64', 8);
+ByteBuffer.prototype.writeBigInt64 = writer('setBigInt64', 8);
+ByteBuffer.prototype.writeBigUint64 = writer('setBigUint64', 8);
 
 export default ByteBuffer;
